@@ -67,13 +67,26 @@ module App =
             verticalOptions = LayoutOptions.Center,
             fontAttributes = FontAttributes.Bold)
 
+    let descriptionLabel text =
+        View.Label(text = text,
+            textColor = secondaryTextColor,
+            fontSize = descriptionFontSize
+            )
+
+    let titleAndDescription title titleFontSize description =
+        View.StackLayout(margin = 0.,
+            children=[
+                titleLabel title titleFontSize
+                descriptionLabel description |> fun(label) -> label.Margin (Thickness(0.,-8.,0.,0.))]
+                )
+
     let materialButton materialIcon backgroundColor textColor command =
         View.Button(text = materialIcon,
             command = command,
             fontFamily = materialFont,
             fontSize = 20.,
             backgroundColor = backgroundColor,
-            widthRequest = 42.,
+            //widthRequest = 42.,
             textColor = textColor)
 
     let materialIcon materialIcon color =
@@ -94,6 +107,7 @@ module App =
                 star
                 View.BoxView(color = backgroundColor, 
                     widthRequest = boxViewWidth,
+                    isVisible = (if percentage > 0. then true else false),
                     horizontalOptions = LayoutOptions.End)
                 ])
 
@@ -102,44 +116,32 @@ module App =
         let fraction = (rating - Math.Truncate(rating))
         View.StackLayout(orientation = StackOrientation.Horizontal,
             children = [
-                for i in 1m .. fullNumber -> if i = fullNumber && fraction <> 0m then ratingStar (float fraction) else ratingStar 1.
+                for i in 1m .. fullNumber -> if i = fullNumber then ratingStar (float fraction) else ratingStar 1.
             ])
 
     let favoriteIcon city dispatch =
         let icon = if city.IsFavorite then heartFilled else heartOutline
         (materialButton icon Color.Transparent favoriteColor (fun () -> dispatch (ToggleFavorite city)))
         |> fun(button) -> button.HorizontalOptions LayoutOptions.End
-        |> fun(button) -> button.Margin (Thickness(0.,-8.,-8.,0.))
-        |> fun(button) -> button.Padding 0.
+        |> fun(button) -> button.Margin (Thickness(0.,-8.,-28.,0.))
         |> fun(button) -> button.HeightRequest 8.
         |> fun(button) -> button.FontSize 32.
 
-    let titleAndDescription title titleFontSize description descriptionFontSize =
-        View.StackLayout(
-            margin = 0.,
-            children=[
-            titleLabel title titleFontSize
-            View.Label(text = description,
-                margin = Thickness(0.,-10.,0.,0.),
-                textColor = secondaryTextColor,
-                fontSize = descriptionFontSize
-                )]
-            )
-
+    let roundedCornerImage imagePath =
+        View.Frame(cornerRadius = cornerRadius,
+            padding = 0.,
+            isClippedToBounds = true,
+            hasShadow = true,
+            content = View.Image(
+                source = imagePath,
+                aspect = Aspect.AspectFill)
+        )
+        
     let cityDescriptionFrame city dispatch =
         View.StackLayout(
             margin = Thickness(16.,0.,16.,0.),
             children = [
-                View.Frame(
-                    heightRequest = 320.,
-                    cornerRadius = cornerRadius,
-                    padding = 0.,
-                    isClippedToBounds = true,
-                    hasShadow = true,
-                    content = View.Image(
-                        source = city.Image,
-                        aspect = Aspect.AspectFill)
-                    )
+                (roundedCornerImage city.Image |> fun(img) -> img.HeightRequest 320.)
                 View.Frame(
                     heightRequest = 70.,
                     margin = Thickness(24.,-64.,24.,0.),
@@ -150,7 +152,7 @@ module App =
                         rowdefs=["auto"; "auto" ],
                         coldefs=["*";"auto"],
                         children=[
-                            (titleAndDescription city.Name titleFontSize city.Country descriptionFontSize)
+                            (titleAndDescription city.Name titleFontSize city.Country)
                             (favoriteIcon city dispatch).GridColumn(2)
                             (ratingControl city.Rating).GridRow(1).GridColumnSpan(2)
                             ]
@@ -178,7 +180,7 @@ module App =
                             heightRequest = 32.,
                             aspect = Aspect.Fill)
                     )
-                    (titleAndDescription title cardTitleFontSize description descriptionFontSize).GridColumn(1)
+                    (titleAndDescription title cardTitleFontSize description).GridColumn(1)
                     ]
             ),
             hasShadow = true)
@@ -200,26 +202,27 @@ module App =
             backgroundColor = backgroundColor,
             content = View.ScrollView(
                 content = View.Grid(
-                rowdefs = ["auto"; "auto"; "auto"; "*"],
-                margin = Thickness(16.,8.,16.,-6.),
-                children = [
-                    View.Grid(
-                        coldefs = ["*"; "auto"],
-                        children = [
-                            (titleLabel "Destinations" titleFontSize).GridColumn(0)
-                            (materialButton magnify backgroundColor secondaryTextColor (fun() -> ())).GridColumn(1)
-                        ])
-                    (cityDescriptionFrame model.CurrentCity dispatch).GridRow(1)
-                    // todo: fix carousel view
-                    //View.CarouselView(
-                    //    items = [
-                    //        cityDescriptionFrame
-                    //        cityDescriptionFrame
-                    //        cityDescriptionFrame
-                    //        ]).GridRow(1)
-                    (thingsTodo model.CurrentCity (Thickness(0., 32., 0., 0.))).GridRow(2)
-                ]
-                ))
+                    rowdefs = ["auto"; "auto"; "auto"; "*"],
+                    margin = Thickness(16.,8.,16.,-6.),
+                    children = [
+                        View.Grid(
+                            coldefs = ["*"; "auto"],
+                            children = [
+                                (titleLabel "Destinations" titleFontSize).GridColumn(0)
+                                (materialButton magnify backgroundColor secondaryTextColor (fun() -> ())
+                                    |> fun(button) -> button.WidthRequest 42.).GridColumn(1)
+                            ])
+                        (cityDescriptionFrame model.CurrentCity dispatch).GridRow(1)
+                        // todo: fix carousel view
+                        //View.CarouselView(
+                        //    items = [
+                        //        cityDescriptionFrame
+                        //        cityDescriptionFrame
+                        //        cityDescriptionFrame
+                        //        ]).GridRow(1)
+                        (thingsTodo model.CurrentCity (Thickness(0., 32., 0., 0.))).GridRow(2)
+                    ]
+                    ))
         )
 
     // Note, this declaration is needed if you enable LiveUpdate
