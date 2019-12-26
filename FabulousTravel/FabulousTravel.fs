@@ -44,9 +44,9 @@ module App =
 
     let cornerRadius = 22.
 
-    let titleFontSize = 20.
-    let cardTitleFontSize = 16.
-    let descriptionFontSize = 14.
+    let titleFontSize = FontSize 20.
+    let cardTitleFontSize = FontSize 16.
+    let descriptionFontSize = FontSize 14.
 
     let textColor = Color.Black
     let secondaryTextColor = Color.FromHex "FFB5B5B5"
@@ -74,7 +74,7 @@ module App =
             )
 
     let titleAndDescription title titleFontSize description =
-        View.StackLayout(margin = 0.,
+        View.StackLayout(margin = Thickness 0.,
             children=[
                 titleLabel title titleFontSize
                 descriptionLabel description |> fun(label) -> label.Margin (Thickness(0.,-8.,0.,0.))]
@@ -84,7 +84,7 @@ module App =
         View.Button(text = materialIcon,
             command = command,
             fontFamily = materialFont,
-            fontSize = 20.,
+            fontSize = titleFontSize,
             backgroundColor = backgroundColor,
             //widthRequest = 42.,
             textColor = textColor)
@@ -93,20 +93,20 @@ module App =
         View.Label(text = materialIcon,
             textColor = color,
             fontFamily = materialFont,
-            fontSize = 18.,
+            fontSize = FontSize 18.,
             verticalOptions = LayoutOptions.Center,
             fontAttributes = FontAttributes.Bold)
 
     let ratingStar percentage =
         let star = materialIcon star starColor
-        let boxViewWidth = 16. - (16. * percentage)
+        let boxViewWidth = (16. - (16. * percentage))
         View.Grid(
-            padding = 0.,
+            padding = Thickness 0.,
             margin = Thickness(0.,-4.,0.,0.),
             children = [
                 star
                 View.BoxView(color = backgroundColor, 
-                    widthRequest = boxViewWidth,
+                    width = boxViewWidth,
                     isVisible = (if percentage > 0. then true else false),
                     horizontalOptions = LayoutOptions.End)
                 ])
@@ -125,11 +125,11 @@ module App =
         |> fun(button) -> button.HorizontalOptions LayoutOptions.End
         |> fun(button) -> button.Margin (Thickness(0.,-8.,-28.,0.))
         |> fun(button) -> button.HeightRequest 8.
-        |> fun(button) -> button.FontSize 32.
+        |> fun(button) -> button.FontSize (FontSize 32.)
 
     let roundedCornerImage imagePath =
         View.Frame(cornerRadius = cornerRadius,
-            padding = 0.,
+            padding = Thickness 0.,
             isClippedToBounds = true,
             hasShadow = true,
             content = View.Image(
@@ -141,20 +141,20 @@ module App =
         View.StackLayout(
             margin = Thickness(16.,0.,16.,0.),
             children = [
-                (roundedCornerImage city.Image |> fun(img) -> img.HeightRequest 320.)
+                (roundedCornerImage (Path city.Image) |> fun(img) -> img.HeightRequest 320.)
                 View.Frame(
-                    heightRequest = 70.,
+                    height = 70.,
                     margin = Thickness(24.,-64.,24.,0.),
                     padding = Thickness(20.,12.,16.,12.),
                     backgroundColor = Color.White,
                     cornerRadius = cornerRadius,
                     content = View.Grid(
-                        rowdefs=["auto"; "auto" ],
-                        coldefs=["*";"auto"],
+                        rowdefs=[Auto; Auto ],
+                        coldefs=[Star;Auto],
                         children=[
                             (titleAndDescription city.Name titleFontSize city.Country)
-                            (favoriteIcon city dispatch).GridColumn(2)
-                            (ratingControl city.Rating).GridRow(1).GridColumnSpan(2)
+                            (favoriteIcon city dispatch).Column(2)
+                            (ratingControl city.Rating).Row(1).ColumnSpan(2)
                             ]
                     ),
                     hasShadow = true)
@@ -166,21 +166,21 @@ module App =
             backgroundColor = Color.White,
             cornerRadius = cornerRadius,
             content = View.Grid(
-                coldefs=["auto";"*"],
+                coldefs=[Auto;Star],
                 children=[
                     View.Frame(
-                        heightRequest = 56.,
-                        widthRequest = 64.,
-                        padding = 0.,
+                        height = 56.,
+                        width = 64.,
+                        padding = Thickness 0.,
                         isClippedToBounds = true,
                         cornerRadius = 8.,
                         margin = Thickness(-8., 0.,8.,0.),
                         content = View.Image(source = image,
-                            widthRequest = 32.,
-                            heightRequest = 32.,
+                            width = 32.,
+                            height = 32.,
                             aspect = Aspect.Fill)
                     )
-                    (titleAndDescription title cardTitleFontSize description).GridColumn(1)
+                    (titleAndDescription title cardTitleFontSize description).Column(1)
                     ]
             ),
             hasShadow = true)
@@ -190,10 +190,10 @@ module App =
             orientation = StackOrientation.Vertical,
             margin = margin,
             children = [
-                (titleLabel "Things to do" titleFontSize).GridRow(0)
-                (activityFrame "Classic landmarks" "Classic landmarks you need to see. Check these of your bucketlist!" "ZurichLandmark").GridRow(1)
-                (activityFrame "Interesting sights" "Amazing sights that will make for stunning photos!" "Sight").GridRow(2)
-                (activityFrame "Restaurants" "Where to go when you're feeling peckish and want to try out the local food." "Restaurant").GridRow(3)
+                (titleLabel "Things to do" titleFontSize).Row(0)
+                (activityFrame "Classic landmarks" "Classic landmarks you need to see. Check these of your bucketlist!" (Path "ZurichLandmark")).Row(1)
+                (activityFrame "Interesting sights" "Amazing sights that will make for stunning photos!" (Path "Sight")).Row(2)
+                (activityFrame "Restaurants" "Where to go when you're feeling peckish and want to try out the local food." (Path "Restaurant")).Row(3)
                 ]
         )
 
@@ -202,25 +202,22 @@ module App =
             backgroundColor = backgroundColor,
             content = View.ScrollView(
                 content = View.Grid(
-                    rowdefs = ["auto"; "auto"; "auto"; "*"],
+                    rowdefs = [Auto; Auto; Star],
                     margin = Thickness(16.,8.,16.,-6.),
                     children = [
                         View.Grid(
-                            coldefs = ["*"; "auto"],
+                            coldefs = [Star; Auto],
                             children = [
-                                (titleLabel "Destinations" titleFontSize).GridColumn(0)
+                                (titleLabel "Destinations" titleFontSize).Column(0)
                                 (materialButton magnify backgroundColor secondaryTextColor (fun() -> ())
-                                    |> fun(button) -> button.WidthRequest 42.).GridColumn(1)
+                                    |> fun(button) -> button.WidthRequest 42.).Column(1)
                             ])
-                        (cityDescriptionFrame model.CurrentCity dispatch).GridRow(1)
                         // todo: fix carousel view
-                        //View.CarouselView(
-                        //    items = [
-                        //        cityDescriptionFrame
-                        //        cityDescriptionFrame
-                        //        cityDescriptionFrame
-                        //        ]).GridRow(1)
-                        (thingsTodo model.CurrentCity (Thickness(0., 32., 0., 0.))).GridRow(2)
+                        View.CarouselView(
+                            items = (model.Cities |> Seq.map (fun m -> cityDescriptionFrame m dispatch) |> Seq.toList),
+                            height = 380.
+                                ).Row(1)
+                        (thingsTodo model.CurrentCity (Thickness(0., 32., 0., 0.))).Row(2)
                     ]
                     ))
         )

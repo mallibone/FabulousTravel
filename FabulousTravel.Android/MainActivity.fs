@@ -22,6 +22,8 @@ type MainActivity() =
 
         Xamarin.Essentials.Platform.Init(this, bundle)
 
+        //Xamarin.Forms
+        global.Xamarin.Forms.Forms.SetFlags([|"Shell_Experimental"; "CollectionView_Experimental"; "Visual_Experimental"|])
         Xamarin.Forms.Forms.Init (this, bundle)
 
         let appcore  = new FabulousTravel.App()
